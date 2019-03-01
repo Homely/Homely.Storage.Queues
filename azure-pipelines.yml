@@ -1,0 +1,37 @@
+name: $(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+pool:
+  vmImage: 'Ubuntu 16.04'
+
+variables:
+  buildConfiguration: 'Release'
+
+trigger:
+  branches:
+    include:
+    - master
+
+pr:
+  autoCancel: false
+
+steps:
+# Remove this task once .NET Core 2.2 is added to hosted agent.
+- task: DotNetCoreInstaller@0
+  inputs:
+    packageType: 'sdk'
+    version: '2.2.100'
+
+- script: dotnet build --configuration $(buildConfiguration) -p:Version=$(Build.BuildNumber)
+  displayName: 'dotnet build'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '**/tests/*/*.csproj'
+    arguments: '--configuration $(buildConfiguration) -p:Version=$(Build.BuildNumber) --no-build'
+  displayName: 'dotnet test'  
+    
+- script: dotnet pack --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -p:Version=$(Build.BuildNumber) -v normal --no-build
+  displayName: 'dotnet pack (create nuget package)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifacts'

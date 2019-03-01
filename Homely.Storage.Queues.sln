@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28621.142
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Homely.Storage.Queues", "src\Homely.Storage.Queues\Homely.Storage.Queues.csproj", "{01EF92B0-18B6-4B61-B8D1-874C5B62EB24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homely.Storage.Queues.Tests", "tests\Homely.Storage.Queues.Tests\Homely.Storage.Queues.Tests.csproj", "{E09D6B56-5D63-4BCB-940D-F4C05D617D65}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{01EF92B0-18B6-4B61-B8D1-874C5B62EB24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01EF92B0-18B6-4B61-B8D1-874C5B62EB24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01EF92B0-18B6-4B61-B8D1-874C5B62EB24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01EF92B0-18B6-4B61-B8D1-874C5B62EB24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E09D6B56-5D63-4BCB-940D-F4C05D617D65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E09D6B56-5D63-4BCB-940D-F4C05D617D65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E09D6B56-5D63-4BCB-940D-F4C05D617D65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E09D6B56-5D63-4BCB-940D-F4C05D617D65}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C7C7F250-C1DA-4A8C-88A2-8F70EDAF0828}
+	EndGlobalSection
+EndGlobal
