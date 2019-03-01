@@ -21,21 +21,30 @@ The library is (currently) only targetting Azure Storage Queues. Why not other q
 
 e.g. 
 ```
-await queue.AddMessageAsync(1);           // int '1' pushed as a string "1".
-await queue.AddMessageAsync("hi there!"); // string 'Hi there' pushed. 
-await queue.AddMessageAsync(new Foo());   // serialized to JSON.
+await queue.AddMessageAsync(1);            // int '1' pushed as a string "1".
+await queue.AddMessageAsync("hi there!");  // string 'Hi there' pushed. 
+await queue.AddMessageAsync(new Foo());    // serialized to JSON.
+await queue.AddMessageAsync(myListOfFoos); // serialized to JSON.
 ```
 
 - `GetMessageAsync` : this will retrieve the item from the queue and if the destination type is a specific complex object, it will then attempt to deserialize the message into that complex object.
 
 e.g. 
 ```
-var myFooMessage = await queue.GetMessageAsync<Foo>();
+// No 'Type' provided. Assumption: message content is not json and will therefore not be deserialized.
+var myMessage = await queue.GetMessageAsync();
+var content = myMessage.Model; // This is a string.
 
+
+// 'Type' is provided. Assumption: message content is serialized as JSON.
+var myFooMessage = await queue.GetMessageAsync<Foo>();
+var foo = myFooMessage.Model; // the value/content of the message, which is a 'Foo'.
+
+
+// Other points of interest (which help if you wish to delete this message, later)
 // myFooMessage.Id == the queue message Id.
 // myFooMessage.Receipt == the queue message receipt.
 
-var foo = myFooMessage.Model; // the value/content of the message, which is a 'Foo'.
 ```
 
 ---
