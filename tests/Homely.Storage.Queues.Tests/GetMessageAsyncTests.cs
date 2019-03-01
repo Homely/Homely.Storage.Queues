@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -30,6 +31,31 @@ namespace Homely.Storage.Queues.Tests
             new object[]
             {
                 Guid.NewGuid().ToString()
+            },
+            new object[]
+            {
+                "[1,2,3,4,5,6,7,8,9,10]"
+            }
+        };
+
+        public static IEnumerable<object[]> ValidComplexObjects => new[]
+        {
+            new object[]
+            {
+                new FakeThing
+                {
+                    Id = 1,
+                    Name = "name",
+                    NickNames = new[]
+                    {
+                        "name-1",
+                        "name-2"
+                    }
+                }
+            },
+            new object[]
+            {
+                Enumerable.Range(1, 50).ToList()
             }
         };
 
@@ -50,27 +76,18 @@ namespace Homely.Storage.Queues.Tests
             CloudQueue.VerifyAll();
         }
 
-        [Fact]
-        public async Task GivenAQueueMessageWithSomeJsonContent_GetMessageAsync_ReturnsAMessage()
+        [Theory]
+        [MemberData(nameof(ValidComplexObjects))]
+        public async Task GivenAQueueMessageWithSomeJsonContent_GetMessageAsync_ReturnsAMessage<T>(T someObject)
         {
             // Arrange.
-            var someObject = new FakeThing
-            {
-                Id = 1,
-                Name = "name",
-                NickNames = new[]
-                {
-                    "name-1",
-                    "name-2"
-                }
-            };
             var message = new CloudQueueMessage(JsonConvert.SerializeObject(someObject));
 
             CloudQueue.Setup(x => x.GetMessageAsync(null, null, null, It.IsAny<CancellationToken>()))
                       .ReturnsAsync(message);
 
             // Act.
-            var result = await Queue.GetMessageAsync<FakeThing>();
+            var result = await Queue.GetMessageAsync<T>();
 
             // Assert.
             result.Model.ShouldLookLike(someObject);

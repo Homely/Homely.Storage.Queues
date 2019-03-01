@@ -2,6 +2,7 @@ using Microsoft.WindowsAzure.Storage.Queue;
 using Moq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -37,6 +38,10 @@ namespace Homely.Storage.Queues.Tests
                         "c"
                     }
                 }
+            },
+            new object[]
+            {
+                Enumerable.Range(1, 50)
             }
         };
 
