@@ -23,7 +23,7 @@ namespace Homely.Storage.Queues
         public string Id { get => CloudQueueMessage?.Id; }
         public string Receipt { get => CloudQueueMessage?.PopReceipt; }
 
-        public int DeQueueCount
+        public int DequeueCount
         {
             get => CloudQueueMessage == null
                       ? default
