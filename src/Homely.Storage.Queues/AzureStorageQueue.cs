@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Homely.Storage.Queues
 {
-    public class AzureStorageQueue : IAzureStorageQueue
+    public class AzureStorageQueue : IQueue
     {
         private readonly ILogger<AzureStorageQueue> _logger;
         private readonly string _connectionString;

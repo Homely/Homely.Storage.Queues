@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Homely.Storage.Queues
 {
-    public interface IAzureStorageQueue
+    public interface IQueue
     {
         /// <summary>
         /// Name of the Queue.
