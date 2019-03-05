@@ -14,7 +14,25 @@ namespace Homely.Storage.Queues
             }
 
             var model = JsonConvert.DeserializeObject<T>(message.AsString);
-            return new Message<T>(model, message);
+            return message.ToMessage(model);
+        }
+
+        internal static Message<T> ToMessage<T>(this CloudQueueMessage message, T model)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            return new Message<T>(model, 
+                                  message.Id, 
+                                  message.PopReceipt, 
+                                  message.DequeueCount);
         }
     }
 }

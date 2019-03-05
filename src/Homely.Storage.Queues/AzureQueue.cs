@@ -11,17 +11,17 @@ using System.Threading.Tasks;
 
 namespace Homely.Storage.Queues
 {
-    public class AzureStorageQueue : IQueue
+    public class AzureQueue : IQueue
     {
-        private readonly ILogger<AzureStorageQueue> _logger;
+        private readonly ILogger<AzureQueue> _logger;
         private readonly string _connectionString;
         private Lazy<Task<CloudQueue>> _queue;
 
         public string Name { get; }
 
-        public AzureStorageQueue(string connectionString,
+        public AzureQueue(string connectionString,
                                  string queueName,
-                                 ILogger<AzureStorageQueue> logger)
+                                 ILogger<AzureQueue> logger)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
             {
@@ -144,24 +144,28 @@ namespace Homely.Storage.Queues
         }
 
         /// <inheritdoc />
-        public async Task DeleteMessageAsync(string messageId,
-                                             string receipt,
+        public async Task DeleteMessageAsync(Message message,
                                              CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(messageId))
+            if (message == null)
             {
-                throw new ArgumentException(nameof(messageId));
+                throw new ArgumentNullException(nameof(message));
             }
 
-            if (string.IsNullOrWhiteSpace(receipt))
+            if (string.IsNullOrWhiteSpace(message.Id))
             {
-                throw new ArgumentException(nameof(receipt));
+                throw new ArgumentException(nameof(message.Id));
+            }
+
+            if (string.IsNullOrWhiteSpace(message.Receipt))
+            {
+                throw new ArgumentException(nameof(message.Receipt));
             }
 
             var queue = await Queue;
 
-            await queue.DeleteMessageAsync(messageId,
-                                           receipt,
+            await queue.DeleteMessageAsync(message.Id,
+                                           message.Receipt,
                                            cancellationToken);
         }
 
@@ -184,7 +188,7 @@ namespace Homely.Storage.Queues
             if (Helpers.IsASimpleType(typeof(T)))
             {
                 var value = (T)Convert.ChangeType(message.AsString, typeof(T));
-                return new Message<T>(value, message);
+                return new AzureMessage<T>(value, message);
             }
 
             // Complex type, so lets assume it was serialized as Json ... so now we deserialize it.
@@ -202,7 +206,7 @@ namespace Homely.Storage.Queues
                                                       cancellationToken);
             return message == null
                 ? null
-                : new Message(message);
+                : new AzureMessage(message);
         }
 
         /// <inheritdoc  />
@@ -242,7 +246,7 @@ namespace Homely.Storage.Queues
                                                         null,
                                                         cancellationToken);
 
-            return messages?.Select(message => new Message(message)) ?? Enumerable.Empty<Message>();
+            return messages?.Select(message => new AzureMessage(message)) ?? Enumerable.Empty<Message>();
         }
 
         /// <inheritdoc  />

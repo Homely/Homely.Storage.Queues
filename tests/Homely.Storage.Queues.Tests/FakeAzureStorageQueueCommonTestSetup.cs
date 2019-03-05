@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Moq;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Homely.Storage.Queues.Tests
 {
@@ -19,5 +18,20 @@ namespace Homely.Storage.Queues.Tests
         protected Mock<CloudQueue> CloudQueue { get; }
         protected Mock<ILogger<FakeAzureStorageQueue>> Logger { get; }
         protected FakeAzureStorageQueue Queue { get; }
+
+        protected CloudQueueMessage CreateMessage<T>(T someObject)
+        {
+            const string id = "aaa";
+            const string popReceipt = "bbb";
+
+            var content = Helpers.IsASimpleType(typeof(T))
+                    ? someObject.ToString()
+                    : JsonConvert.SerializeObject(someObject);
+
+            var message = new CloudQueueMessage(id, popReceipt);
+            message.SetMessageContent2(System.Text.Encoding.UTF8.GetBytes(content));
+
+            return message;
+        }
     }
 }

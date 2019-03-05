@@ -55,7 +55,7 @@ namespace Homely.Storage.Queues.Tests
                 : JsonConvert.SerializeObject(content);
 
             // Act.
-            await Queue.AddMessageAsync(content);
+            await Queue.AddMessageAsync(content, default);
 
             // Assert.
             CloudQueue.Verify(x => x.AddMessageAsync(It.Is<CloudQueueMessage>(y => y.AsString == messageContent),

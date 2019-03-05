@@ -1,7 +1,5 @@
 ﻿using Homely.Testing;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Moq;
-using Newtonsoft.Json;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -64,7 +62,7 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenAQueueMessageWithSomeStringContent_GetMessageAsync_ReturnsAMessage(string content)
         {
             // Arrange.
-            var message = new CloudQueueMessage(content);
+            var message = CreateMessage(content);
             CloudQueue.Setup(x => x.GetMessageAsync(null, null, null, It.IsAny<CancellationToken>()))
                       .ReturnsAsync(message);
 
@@ -81,8 +79,7 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenAQueueMessageWithSomeJsonContent_GetMessageAsync_ReturnsAMessage<T>(T someObject)
         {
             // Arrange.
-            var message = new CloudQueueMessage(JsonConvert.SerializeObject(someObject));
-
+            var message = CreateMessage(someObject);
             CloudQueue.Setup(x => x.GetMessageAsync(null, null, null, It.IsAny<CancellationToken>()))
                       .ReturnsAsync(message);
 

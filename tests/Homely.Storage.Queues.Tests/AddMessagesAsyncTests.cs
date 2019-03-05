@@ -78,7 +78,7 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenSomeObjectContents_AddMessagesAsync_AddsItToTheQueue<T>(IEnumerable<T> items)
         {
             // Arrange & Act.
-            await Queue.AddMessagesAsync(items);
+            await Queue.AddMessagesAsync(items, default);
 
             // Assert.
             foreach (var content in items)

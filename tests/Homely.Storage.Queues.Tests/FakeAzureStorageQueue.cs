@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Homely.Storage.Queues.Tests
 {
-    public class FakeAzureStorageQueue : AzureStorageQueue
+    public class FakeAzureStorageQueue : AzureQueue
     {
         public FakeAzureStorageQueue(CloudQueue cloudQueue,
                                      ILogger<FakeAzureStorageQueue> logger) : base("ignored-connection-string", "ignored-name", logger)

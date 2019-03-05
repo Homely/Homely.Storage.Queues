@@ -3,32 +3,60 @@ using System;
 
 namespace Homely.Storage.Queues
 {
+    /// <summary>
+    /// Queue message content.
+    /// </summary>
+    /// <remarks>The <code>Model</code> is a string.</remarks>
     public class Message : Message<string>
     {
-        public Message(CloudQueueMessage message) : base(message.AsString, message)
+        public Message(string content,
+                       string id,
+                       string receipt,
+                       int dequeueCount) : base(content, id, receipt, dequeueCount)
         { }
     }
 
+    /// <summary>
+    /// Queue message content.
+    /// </summary>
+    /// <remarks>The <code>Model</code> is a specific type, provided.</remarks>
     public class Message<T>
     {
         public Message(T model,
-                       CloudQueueMessage message)
+                       string id,
+                       string receipt,
+                       int dequeueCount)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("message", nameof(id));
+            }
+
+            if (string.IsNullOrWhiteSpace(receipt))
+            {
+                throw new ArgumentException("message", nameof(receipt));
+            }
+
+            if (dequeueCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dequeueCount));
+            }
+
             Model = model;
-            CloudQueueMessage = message
-                                ?? throw new ArgumentNullException(nameof(message));
+            Id = id;
+            Receipt = receipt;
+            DequeueCount = dequeueCount;
         }
 
-        public CloudQueueMessage CloudQueueMessage { get; }
-        public string Id { get => CloudQueueMessage?.Id; }
-        public string Receipt { get => CloudQueueMessage?.PopReceipt; }
+        public string Id { get; }   
+        public string Receipt { get; }
 
-        public int DequeueCount
-        {
-            get => CloudQueueMessage == null
-                      ? default
-                      : CloudQueueMessage.DequeueCount;
-        }
+        public int DequeueCount { get; }
 
         public T Model { get; }
     }

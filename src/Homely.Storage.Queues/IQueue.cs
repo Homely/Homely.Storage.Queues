@@ -47,8 +47,7 @@ namespace Homely.Storage.Queues
         /// <param name="receipt">A string specifying the pop receipt value.</param>
         /// <param name="cancellationToken">A System.Threading.CancellationToken to observe while waiting for a task to complete.</param>
         /// <returns>A System.Threading.Tasks.Task object that represents the asynchronous operation.</returns>
-        Task DeleteMessageAsync(string messageId, 
-                                string receipt, 
+        Task DeleteMessageAsync(Message message,
                                 CancellationToken cancellationToken = default);
 
         /// <summary>
