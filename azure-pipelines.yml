@@ -8,12 +8,20 @@ variables:
 trigger:
   branches:
     include:
-    - master
-
+    #- master
+    - refs/tags/*
 pr:
   autoCancel: false
 
 steps:
+
+- script: Write-Host "##vso[task.setvariable variable=Build.BuildNumber]$(Build.SourceBranchName)"
+  displayName: 'Setting the build number based on a Tag or not.'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+
+- script: Write-Host $(Build.BuildNumber)
+  displayName: Check - build number
+
 # Remove this task once .NET Core 2.2 is added to hosted agent.
 - task: DotNetCoreInstaller@0
   inputs:
@@ -31,7 +39,9 @@ steps:
   displayName: 'dotnet test'  
     
 - script: dotnet pack --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -p:Version=$(Build.BuildNumber) -v normal --no-build
-  displayName: 'dotnet pack (create nuget package)'
+  displayName: 'dotnet pack [i.e. create nuget package]'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish artifacts'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
