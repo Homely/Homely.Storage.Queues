@@ -8,19 +8,25 @@ variables:
 trigger:
   branches:
     include:
-    #- master
+    - master
     - refs/tags/*
 pr:
   autoCancel: false
 
 steps:
 
-- script: Write-Host "##vso[task.setvariable variable=Build.BuildNumber]$(Build.SourceBranchName)"
-  displayName: 'Setting the build number based on a Tag or not.'
+- powershell: |
+    $buildVersion = $env:BUILD_BUILDNUMBER
+    Write-Host "##vso[task.setvariable variable=assemblyVersion]$buildVersion"
+    Write-Host "Assembly version is" $buildVersion
+  displayName: 'Set the assembly version number.'
+    
+- powershell: |
+    $tagVersion = $env:BUILD_SOURCEBRANCH.remove(0, 10)
+    Write-Host "##vso[task.setvariable variable=assemblyVersion]$tagVersion"
+    Write-Host "*** TAG OVERWRITE :: Assembly version is" $tagVersion
+  displayName: 'Update assembly version to be the Tag value.'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-
-- script: Write-Host $(Build.BuildNumber)
-  displayName: Check - build number
 
 # Remove this task once .NET Core 2.2 is added to hosted agent.
 - task: DotNetCoreInstaller@0
@@ -28,17 +34,17 @@ steps:
     packageType: 'sdk'
     version: '2.2.100'
 
-- script: dotnet build --configuration $(buildConfiguration) -p:Version=$(Build.BuildNumber)
+- script: dotnet build --configuration $(buildConfiguration) -p:Version=$(assemblyVersion)
   displayName: 'dotnet build'
 
 - task: DotNetCoreCLI@2
   inputs:
     command: test
     projects: '**/tests/*/*.csproj'
-    arguments: '--configuration $(buildConfiguration) -p:Version=$(Build.BuildNumber) --no-build'
+    arguments: '--configuration $(buildConfiguration) -p:Version=$(assemblyVersion) --no-build'
   displayName: 'dotnet test'  
     
-- script: dotnet pack --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -p:Version=$(Build.BuildNumber) -v normal --no-build
+- script: dotnet pack --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -p:Version=$(assemblyVersion) -v normal --no-build
   displayName: 'dotnet pack [i.e. create nuget package]'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
