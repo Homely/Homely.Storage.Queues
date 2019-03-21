@@ -20,8 +20,8 @@ namespace Homely.Storage.Queues
         public string Name { get; }
 
         public AzureQueue(string connectionString,
-                                 string queueName,
-                                 ILogger<AzureQueue> logger)
+                          string queueName,
+                          ILogger<AzureQueue> logger)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
             {
