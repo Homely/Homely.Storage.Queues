@@ -28,12 +28,6 @@ steps:
   displayName: 'Update assembly version to be the Tag value.'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
-# Remove this task once .NET Core 2.2 is added to hosted agent.
-- task: DotNetCoreInstaller@0
-  inputs:
-    packageType: 'sdk'
-    version: '2.2.100'
-
 - script: dotnet build --configuration $(buildConfiguration) -p:Version=$(assemblyVersion)
   displayName: 'dotnet build'
 
