@@ -10,7 +10,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Homely/Homely/blob/master/LICENSE.txt</PackageProjectUrl>
     <PackageIconUrl>https://i.imgur.com/PnxWhuz.jpg</PackageIconUrl>
-    <RepositoryUrl>https://github.com/Homely/Homely.AspNetCore.Mvc.Helpers</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Homely/Homely.Storage.Queues</RepositoryUrl>
     <RepositoryType>.net c# .net-core</RepositoryType>
     <PackageTags>homely azure storage queue queues</PackageTags>
     <LangVersion>latest</LangVersion>
