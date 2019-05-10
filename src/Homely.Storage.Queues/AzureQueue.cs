@@ -144,8 +144,8 @@ namespace Homely.Storage.Queues
         }
 
         /// <inheritdoc />
-        public async Task DeleteMessageAsync(Message message,
-                                             CancellationToken cancellationToken = default)
+        public async Task DeleteMessageAsync<T>(Message<T> message,
+                                                CancellationToken cancellationToken = default)
         {
             if (message == null)
             {

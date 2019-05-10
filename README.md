@@ -1,5 +1,7 @@
 # Homely - Storage Queues library.
 
+[![Build Status](https://dev.azure.com/homelyau/Homely.Storage.Queues/_apis/build/status/Homely.Homely.Storage.Queues?branchName=master)](https://dev.azure.com/homelyau/Homely.Storage.Queues/_build/latest?definitionId=7&branchName=master)
+
 This library contains some helpers when working with Queue Storage.  
 A common pattern when working with queues is to serialize/deserialize complex objects to be stored in a queue message. This library helps simplify this process - both ways. The content of the queue needs to be a string, so any value is converted either into a string representation (when a 'simple' type) -or- a string-JSON representation (when a 'complex' type).
 
