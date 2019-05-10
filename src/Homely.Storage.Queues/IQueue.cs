@@ -43,12 +43,12 @@ namespace Homely.Storage.Queues
         /// <summary>
         /// Initiates an asynchronous operation to delete a message.
         /// </summary>
-        /// <param name="messageId">A string specifying the message ID.</param>
-        /// <param name="receipt">A string specifying the pop receipt value.</param>
+        /// <typeparam name="T">Type of item.</typeparam>
+        /// <param name="message">The message previously fetched.</param>
         /// <param name="cancellationToken">A System.Threading.CancellationToken to observe while waiting for a task to complete.</param>
         /// <returns>A System.Threading.Tasks.Task object that represents the asynchronous operation.</returns>
-        Task DeleteMessageAsync(Message message,
-                                CancellationToken cancellationToken = default);
+        Task DeleteMessageAsync<T>(Message<T> message,
+                                   CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a message from a queue and wraps it in a simple Message class.
