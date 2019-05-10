@@ -11,7 +11,10 @@ trigger:
     - master
     - refs/tags/*
 pr:
-  autoCancel: false
+  autoCancel: true
+  branches:
+    include:
+    - master
 
 steps:
 
