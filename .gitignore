@@ -18,39 +18,26 @@
 *.lib
 *.sbr
 *.scc
-*.tmp
-[Bb]in/
-[Dd]ebug/
+[Bb]in
+[Dd]ebug*/
 obj/
-[Rr]elease/
-[Tt]humbs.db
-[Tt]est[Rr]esult*
-[Bb]uild[Ll]og.*
+[Rr]elease*/
+_ReSharper*/
 *.[Pp]ublish.xml
+*.resharper*
+AppData/
+App_Data/
 *.log.*
 [Ll]ogs/
 [Dd]ata/
 [Pp]ackages/
-*nlog*.csv
-nlog-404s.csv
-imagecache/
-[Aa]ssemblies/
-[Rr]aven/
-.vs/
-
-# Windows Azure
-csx/
-rcf/
-
-# Windows Azure Publish Settings contain security keys for accessing your Windows Azure account
-.publishsettings
-
-# Resharper Ignores
-_ReSharper.*/
-*.resharper.user
-
-.sass-cache/
-
-# Ignore build stuff
-[Bb]uild/Artifacts/
-[Ss]cripts-[Bb]uild/
+[Tt]humbs.db
+[Tt]est[Rr]esult*
+[Bb]uild[Ll]og.*
+*.sln.DotSettings.*
+*.ncrunchproject
+*.ncrunchsolution
+*.nupkg
+*.vs
+*.vscode
+scripts/report*

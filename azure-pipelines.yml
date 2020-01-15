@@ -4,6 +4,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  solutionFile: 'Homely.Storage.Queues.sln'
 
 trigger:
   branches:
@@ -31,8 +32,18 @@ steps:
   displayName: 'Update assembly version to be the Tag value.'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
-- script: dotnet build --configuration $(buildConfiguration) -p:Version=$(assemblyVersion)
-  displayName: 'dotnet build'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore nuget packages'
+  inputs:
+    command: restore
+    projects: '$(solutionFile)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build solution - $(solutionFile)'
+  inputs:
+    command: build
+    projects: '$(solutionFile)'
+    arguments: '--configuration $(buildConfiguration) --no-restore -p:Version=$(assemblyVersion) -p:langversion=latest'
 
 - task: DotNetCoreCLI@2
   inputs:
