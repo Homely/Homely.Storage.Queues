@@ -218,13 +218,12 @@ namespace Homely.Storage.Queues
             return messages.Select(message => new AzureMessage(message));
         }
 
-
         private async Task<QueueMessage> ReceiveMessageAsync(TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             var messages = await ReceiveMessagesAsync(1,
                                                       visibilityTimeout,
                                                       cancellationToken);
-            return messages.SingleOrDefault();
+            return messages.FirstOrDefault();
         }
 
         private async Task<QueueMessage[]> ReceiveMessagesAsync(int messageCount,
