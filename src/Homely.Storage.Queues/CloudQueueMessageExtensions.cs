@@ -2,8 +2,10 @@ using Azure.Storage.Queues.Models;
 using System;
 
 namespace Homely.Storage.Queues
-{    internal static class CloudQueueMessageExtensions
-    {        internal static Message<T> DeserializeMessage<T>(this QueueMessage message)
+{    
+    internal static class CloudQueueMessageExtensions
+    {        
+        internal static Message<T> DeserializeMessage<T>(this QueueMessage message)
         {
             if (message == null)
             {
