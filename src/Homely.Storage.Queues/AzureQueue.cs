@@ -227,8 +227,8 @@ namespace Homely.Storage.Queues
         }
 
         private async Task<QueueMessage[]> ReceiveMessagesAsync(int messageCount,
-                                                              TimeSpan? visibilityTimeout = null,
-                                                              CancellationToken cancellationToken = default)
+                                                                TimeSpan? visibilityTimeout = null,
+                                                                CancellationToken cancellationToken = default)
         {
             var queue = await Queue;
             var receiveMessagesResponse = await queue.ReceiveMessagesAsync(messageCount,
