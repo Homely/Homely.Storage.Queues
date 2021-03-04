@@ -58,7 +58,7 @@ steps:
 - task: PowerShell@2
   inputs:
     targetType: 'inline'
-    script: 'bash codecov.sh -s $(Agent.BuildDirectory) -f "*coverage.cobertura.xml" -Z -t $(CODECOV_TOKEN)'
+    script: 'bash codecov.sh -s $(Agent.BuildDirectory) -f "*coverage.cobertura.xml" -Z -t $($env:CODECOV_TOKEN)'
     pwsh: true
   displayName: 'codecov: upload'
     
