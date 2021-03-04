@@ -1,9 +1,11 @@
-﻿using Homely.Testing;
+using Azure;
+using Azure.Storage.Queues.Models;
 using Moq;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -62,16 +64,14 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenAQueueMessageWithSomeStringContent_GetMessageAsync_ReturnsAMessage(string content)
         {
             // Arrange.
-            var message = CreateMessage(content);
-            CloudQueue.Setup(x => x.GetMessageAsync(null, null, null, It.IsAny<CancellationToken>()))
-                      .ReturnsAsync(message);
+            SetupQueue(content);
 
             // Act.
             var result = await Queue.GetMessageAsync();
 
             // Assert.
             result.Model.ShouldBe(content);
-            CloudQueue.VerifyAll();
+            QueueClient.VerifyAll();
         }
 
         [Theory]
@@ -79,16 +79,29 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenAQueueMessageWithSomeJsonContent_GetMessageAsync_ReturnsAMessage<T>(T someObject)
         {
             // Arrange.
-            var message = CreateMessage(someObject);
-            CloudQueue.Setup(x => x.GetMessageAsync(null, null, null, It.IsAny<CancellationToken>()))
-                      .ReturnsAsync(message);
+            SetupQueue(someObject);
+            var expected = JsonSerializer.Serialize(someObject);
 
             // Act.
             var result = await Queue.GetMessageAsync<T>();
 
             // Assert.
-            result.Model.ShouldLookLike(someObject);
-            CloudQueue.VerifyAll();
+            var actual = JsonSerializer.Serialize(result.Model);
+            actual.ShouldBe(expected);
+            QueueClient.VerifyAll();
+        }
+
+        private void SetupQueue<T>(T someObjectOrString)
+        {
+            var message = CreateMessage(someObjectOrString);
+            var response = new Mock<Response<QueueMessage[]>>();
+            response.Setup(x => x.Value)
+                    .Returns(new[] { message });
+
+            QueueClient.Setup(x => x.ReceiveMessagesAsync(1,
+                                                          null,
+                                                          It.IsAny<CancellationToken>()))
+                      .ReturnsAsync(response.Object);
         }
     }
 }

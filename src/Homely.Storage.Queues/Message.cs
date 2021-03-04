@@ -1,4 +1,3 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
 using System;
 
 namespace Homely.Storage.Queues
@@ -12,7 +11,10 @@ namespace Homely.Storage.Queues
         public Message(string content,
                        string id,
                        string receipt,
-                       int dequeueCount) : base(content, id, receipt, dequeueCount)
+                       long dequeueCount) : base(content,
+                                                 id,
+                                                 receipt,
+                                                 dequeueCount)
         { }
     }
 
@@ -25,7 +27,7 @@ namespace Homely.Storage.Queues
         public Message(T model,
                        string id,
                        string receipt,
-                       int dequeueCount)
+                       long dequeueCount)
         {
             if (model == null)
             {
@@ -52,12 +54,9 @@ namespace Homely.Storage.Queues
             Receipt = receipt;
             DequeueCount = dequeueCount;
         }
-
-        public string Id { get; }   
+        public string Id { get; }
         public string Receipt { get; }
-
-        public int DequeueCount { get; }
-
+        public long DequeueCount { get; }
         public T Model { get; }
     }
 }

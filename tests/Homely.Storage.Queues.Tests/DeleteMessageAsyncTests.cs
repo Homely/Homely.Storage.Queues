@@ -1,4 +1,5 @@
-﻿using Moq;
+using Azure;
+using Moq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,13 +16,20 @@ namespace Homely.Storage.Queues.Tests
             const string id = "1234";
             const string receiptId = "asdasd";
             const int dequeueCount = 5;
-            var message = new Message(content, id, receiptId, dequeueCount);
+            var message = new Message(content,
+                                      id,
+                                      receiptId,
+                                      dequeueCount);
+            QueueClient.Setup(x => x.DeleteMessageAsync(id,
+                                                        receiptId,
+                                                        It.IsAny<CancellationToken>()))
+                       .ReturnsAsync(new Mock<Response>().Object);
 
             // Act.
             await Queue.DeleteMessageAsync(message);
 
             // Assert.
-            CloudQueue.Verify(x => x.DeleteMessageAsync(id, receiptId, It.IsAny<CancellationToken>()), Times.Once);
+            QueueClient.VerifyAll();
         }
 
         [Fact]
@@ -36,13 +44,20 @@ namespace Homely.Storage.Queues.Tests
             const string id = "1234";
             const string receiptId = "asdasd";
             const int dequeueCount = 5;
-            var message = new Message<FakeThing>(fakeThing, id, receiptId, dequeueCount);
+            var message = new Message<FakeThing>(fakeThing,
+                                                 id,
+                                                 receiptId,
+                                                 dequeueCount);
+            QueueClient.Setup(x => x.DeleteMessageAsync(id,
+                                                        receiptId,
+                                                        It.IsAny<CancellationToken>()))
+                       .ReturnsAsync(new Mock<Response>().Object);
 
             // Act.
             await Queue.DeleteMessageAsync(message);
 
             // Assert.
-            CloudQueue.Verify(x => x.DeleteMessageAsync(id, receiptId, It.IsAny<CancellationToken>()), Times.Once);
+            QueueClient.VerifyAll();
         }
     }
 }

@@ -1,23 +1,20 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
-using Newtonsoft.Json;
+using Azure.Storage.Queues.Models;
 using System;
 
 namespace Homely.Storage.Queues
-{
-    internal static class CloudQueueMessageExtensions
-    {
-        internal static Message<T> DeserializeMessage<T>(this CloudQueueMessage message)
+{    internal static class CloudQueueMessageExtensions
+    {        internal static Message<T> DeserializeMessage<T>(this QueueMessage message)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var model = JsonConvert.DeserializeObject<T>(message.AsString);
+            var model = message.Body.ToObjectFromJson<T>();
             return message.ToMessage(model);
         }
 
-        internal static Message<T> ToMessage<T>(this CloudQueueMessage message, T model)
+        internal static Message<T> ToMessage<T>(this QueueMessage message, T model)
         {
             if (message == null)
             {
@@ -30,7 +27,7 @@ namespace Homely.Storage.Queues
             }
 
             return new Message<T>(model, 
-                                  message.Id, 
+                                  message.MessageId,
                                   message.PopReceipt, 
                                   message.DequeueCount);
         }
