@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
+using Azure.Storage.Queues.Models;
 
 namespace Homely.Storage.Queues
 {
@@ -8,7 +8,10 @@ namespace Homely.Storage.Queues
     /// <remarks>The <code>Model</code> is a specific type, provided.</remarks>
     public class AzureMessage : Message
     {
-        public AzureMessage(CloudQueueMessage message) : base(message.AsString, message.Id, message.PopReceipt, message.DequeueCount)
+        public AzureMessage(QueueMessage message) : base(message.Body.ToString(),
+                                                         message.MessageId,
+                                                         message.PopReceipt,
+                                                         message.DequeueCount)
         {
         }
     }
@@ -19,7 +22,10 @@ namespace Homely.Storage.Queues
     /// <remarks>The <code>Model</code> is a specific type, provided.</remarks>
     public class AzureMessage<T> : Message<T>
     {
-        public AzureMessage(T model, CloudQueueMessage message) : base(model, message.Id, message.PopReceipt, message.DequeueCount)
+        public AzureMessage(T model, QueueMessage message) : base(model,
+                                                                  message.MessageId,
+                                                                  message.PopReceipt,
+                                                                  message.DequeueCount)
         {
         }
     }

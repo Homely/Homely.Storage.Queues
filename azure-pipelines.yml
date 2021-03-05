@@ -45,12 +45,22 @@ steps:
     projects: '$(solutionFile)'
     arguments: '--configuration $(buildConfiguration) --no-restore -p:Version=$(assemblyVersion) -p:langversion=latest'
 
-- task: DotNetCoreCLI@2
+- script: dotnet test -c $(buildConfiguration) -v minimal --no-build --logger trx --collect:"XPlat Code Coverage" --results-directory './CodeCoverageResults'
+  displayName: 'dotnet test'
+  
+- task: PowerShell@2
   inputs:
-    command: test
-    projects: '**/tests/*/*.csproj'
-    arguments: '--configuration $(buildConfiguration) -p:Version=$(assemblyVersion) --no-build'
-  displayName: 'dotnet test'  
+    targetType: 'inline'
+    script: 'Invoke-WebRequest -Uri "https://codecov.io/bash" -OutFile codecov.sh'
+    pwsh: true
+  displayName: 'codecov: download script'
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: 'bash codecov.sh -s $(Agent.BuildDirectory) -f "*coverage.cobertura.xml" -Z -t $($env:CODECOV_TOKEN)'
+    pwsh: true
+  displayName: 'codecov: upload'
     
 - script: dotnet pack --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory) -p:Version=$(assemblyVersion) -v normal --no-build
   displayName: 'dotnet pack [i.e. create nuget package]'

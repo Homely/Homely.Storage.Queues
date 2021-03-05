@@ -1,8 +1,10 @@
-using Microsoft.WindowsAzure.Storage.Queue;
+using Azure;
+using Azure.Storage.Queues.Models;
 using Moq;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -50,20 +52,31 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenSomeObjectContent_AddMessageAsync_AddsItToTheQueue<T>(T content)
         {
             // Arrange.
-            var messageContent = Helpers.IsASimpleType(typeof(T)) 
-                ? content.ToString()
-                : JsonConvert.SerializeObject(content);
+            var isASimpleType = Helpers.IsASimpleType(typeof(T));
+
+            if (isASimpleType)
+            {
+                QueueClient.Setup(x => x.SendMessageAsync(content.ToString(),
+                                                          null,
+                                                          null,
+                                                          It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(new Mock<Response<SendReceipt>>().Object);
+            }
+            else
+            {
+                var messageContent = JsonSerializer.Serialize(content);
+                QueueClient.Setup(x => x.SendMessageAsync(It.Is<BinaryData>(bd => bd.ToString() == messageContent),
+                                                          null,
+                                                          null,
+                                                          It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(new Mock<Response<SendReceipt>>().Object);
+            }
 
             // Act.
             await Queue.AddMessageAsync(content, default);
 
             // Assert.
-            CloudQueue.Verify(x => x.AddMessageAsync(It.Is<CloudQueueMessage>(y => y.AsString == messageContent),
-                                                     null,
-                                                     null,
-                                                     null,
-                                                     null,
-                                                     It.IsAny<CancellationToken>()), Times.Once);
+            QueueClient.VerifyAll();
         }
     }
 }

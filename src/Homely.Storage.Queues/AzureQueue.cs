@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
+using Azure.Storage.Queues;
+using Azure.Storage.Queues.Models;
+using Microsoft.Extensions.Logging;
 using MoreLinq;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +14,7 @@ namespace Homely.Storage.Queues
     {
         private readonly ILogger<AzureQueue> _logger;
         private readonly string _connectionString;
-        private Lazy<Task<CloudQueue>> _queue;
+        private Lazy<Task<QueueClient>> _queue;
 
         public string Name { get; }
 
@@ -37,10 +36,10 @@ namespace Homely.Storage.Queues
             Name = queueName;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _queue = new Lazy<Task<CloudQueue>>(CreateCloudQueue);
+            _queue = new Lazy<Task<QueueClient>>(CreateCloudQueue);
         }
 
-        protected Task<CloudQueue> Queue
+        protected Task<QueueClient> Queue
         {
             get
             {
@@ -48,25 +47,15 @@ namespace Homely.Storage.Queues
             }
             set
             {
-                _queue = new Lazy<Task<CloudQueue>>(() => value);
+                _queue = new Lazy<Task<QueueClient>>(() => value);
             }
         }
 
-        private async Task<CloudQueue> CreateCloudQueue()
+        private async Task<QueueClient> CreateCloudQueue()
         {
-            // TODO: Add POLLY retrying.
-
-            if (!CloudStorageAccount.TryParse(_connectionString, out CloudStorageAccount storageAccount))
-            {
-                _logger.LogError($"Failed to create an Azure Storage Account for the provided credentials. Check the connection string in the your configuration (appsettings or environment variables, etc).");
-                throw new Exception("Failed to create an Azure Storage Account.");
-            }
-
-            var cloudQueueClient = storageAccount.CreateCloudQueueClient();
-            var cloudQueue = cloudQueueClient.GetQueueReference(Name);
-
-            var created = await cloudQueue.CreateIfNotExistsAsync();
-            if (created)
+            var queue = new QueueClient(_connectionString, Name);
+            var createIfNotExistsResponse = await queue.CreateIfNotExistsAsync();
+            if (createIfNotExistsResponse != null)
             {
                 _logger.LogInformation("  - No Azure Queue [{queueName}] found - so one was auto created.", Name);
             }
@@ -75,12 +64,13 @@ namespace Homely.Storage.Queues
                 _logger.LogInformation("  - Using existing Azure Queue [{queueName}].", Name);
             }
 
-            return cloudQueue;
+            return queue;
         }
 
         /// <inheritdoc />
         public async Task AddMessageAsync<T>(T item,
-                                             TimeSpan? initialVisibilityDelay = null,
+                                             TimeSpan? visibilityTimeout = null,
+                                             TimeSpan? timeToLive = null,
                                              CancellationToken cancellationToken = default)
         {
             if (item == null)
@@ -88,33 +78,28 @@ namespace Homely.Storage.Queues
                 throw new ArgumentNullException(nameof(item));
             }
 
-            CloudQueueMessage message;
-
-            // Don't waste effort serializing a string. It's already in a format that's ready to go.
-            if (Helpers.IsASimpleType(typeof(T)))
-            {
-                message = new CloudQueueMessage(item.ToString());
-            }
-            else
-            {
-                // It's a complex type, so serialize this as Json.
-                var messageContent = JsonConvert.SerializeObject(item);
-                message = new CloudQueueMessage(messageContent);
-            }
-
             var queue = await Queue;
 
-            await queue.AddMessageAsync(message,
-                                        null,
-                                        initialVisibilityDelay,
-                                        null,
-                                        null,
-                                        cancellationToken);
+            if (Helpers.IsASimpleType(typeof(T))) // Don't waste effort serializing a string. It's already in a format that's ready to go.
+            {
+                await queue.SendMessageAsync(item.ToString(),
+                                             visibilityTimeout,
+                                             timeToLive,
+                                             cancellationToken);
+            }
+            else // It's a complex type, so serialize this as Json.
+            {
+                await queue.SendMessageAsync(BinaryData.FromObjectAsJson(item),
+                                             visibilityTimeout,
+                                             timeToLive,
+                                             cancellationToken);
+            }
         }
 
         /// <inheritdoc />
         public async Task AddMessagesAsync<T>(IEnumerable<T> contents,
                                               TimeSpan? initialVisibilityDelay = null,
+                                              TimeSpan? timeToLive = null,
                                               int batchSize = 25,
                                               CancellationToken cancellationToken = default)
         {
@@ -136,7 +121,10 @@ namespace Homely.Storage.Queues
 
             foreach (var batch in contents.Batch(finalBatchSize))
             {
-                var tasks = batch.Select(content => AddMessageAsync(content, initialVisibilityDelay, cancellationToken));
+                var tasks = batch.Select(content => AddMessageAsync(content,
+                                                                    initialVisibilityDelay,
+                                                                    timeToLive,
+                                                                    cancellationToken));
 
                 // Execute this batch.
                 await Task.WhenAll(tasks);
@@ -170,24 +158,13 @@ namespace Homely.Storage.Queues
         }
 
         /// <inheritdoc  />
-        public async Task<Message<T>> GetMessageAsync<T>(TimeSpan? visibilityTimeout = null,
-                                                         CancellationToken cancellationToken = default)
+        public async Task<Message<T>> GetMessageAsync<T>(TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
-            var queue = await Queue;
-
-            var message = await queue.GetMessageAsync(visibilityTimeout,
-                                                      null,
-                                                      null,
-                                                      cancellationToken);
-
-            if (message == null)
-            {
-                return null;
-            }
+            var message = await ReceiveMessageAsync(visibilityTimeout, cancellationToken);
 
             if (Helpers.IsASimpleType(typeof(T)))
             {
-                var value = (T)Convert.ChangeType(message.AsString, typeof(T));
+                var value = (T)Convert.ChangeType(message.Body, typeof(T));
                 return new AzureMessage<T>(value, message);
             }
 
@@ -196,14 +173,10 @@ namespace Homely.Storage.Queues
         }
 
         /// <inheritdoc  />
-        public async Task<Message> GetMessageAsync(TimeSpan? visibilityTimeout = null,
-                                                   CancellationToken cancellationToken = default)
+        public async Task<Message> GetMessageAsync(TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
-            var queue = await Queue;
-            var message = await queue.GetMessageAsync(visibilityTimeout,
-                                                      null,
-                                                      null,
-                                                      cancellationToken);
+            var message = await ReceiveMessageAsync(visibilityTimeout, cancellationToken);
+
             return message == null
                 ? null
                 : new AzureMessage(message);
@@ -220,13 +193,11 @@ namespace Homely.Storage.Queues
             }
 
             var queue = await Queue;
-            var messages = await queue.GetMessagesAsync(messageCount,
-                                                        visibilityTimeout,
-                                                        null,
-                                                        null,
-                                                        cancellationToken);
+            var messages = await ReceiveMessagesAsync(messageCount,
+                                                      visibilityTimeout,
+                                                      cancellationToken);
 
-            return messages?.Select(message => message.DeserializeMessage<T>()) ?? Enumerable.Empty<Message<T>>();
+            return messages.Select(message => message.DeserializeMessage<T>());
         }
 
         /// <inheritdoc  />
@@ -240,21 +211,44 @@ namespace Homely.Storage.Queues
             }
 
             var queue = await Queue;
-            var messages = await queue.GetMessagesAsync(messageCount,
-                                                        visibilityTimeout,
-                                                        null,
-                                                        null,
-                                                        cancellationToken);
+            var messages = await ReceiveMessagesAsync(messageCount,
+                                                      visibilityTimeout,
+                                                      cancellationToken);
 
-            return messages?.Select(message => new AzureMessage(message)) ?? Enumerable.Empty<Message>();
+            return messages.Select(message => new AzureMessage(message));
+        }
+
+        private async Task<QueueMessage> ReceiveMessageAsync(TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
+        {
+            var messages = await ReceiveMessagesAsync(1,
+                                                      visibilityTimeout,
+                                                      cancellationToken);
+            return messages.FirstOrDefault();
+        }
+
+        private async Task<QueueMessage[]> ReceiveMessagesAsync(int messageCount,
+                                                                TimeSpan? visibilityTimeout = null,
+                                                                CancellationToken cancellationToken = default)
+        {
+            var queue = await Queue;
+            var receiveMessagesResponse = await queue.ReceiveMessagesAsync(messageCount,
+                                                                           visibilityTimeout,
+                                                                           cancellationToken);
+            return receiveMessagesResponse == null ||
+                   receiveMessagesResponse.Value == null
+                ? Array.Empty<QueueMessage>()
+                : receiveMessagesResponse.Value;
         }
 
         /// <inheritdoc  />
         public async Task<int> GetMessageCountAsync(CancellationToken cancellationToken = default)
         {
             var queue = await Queue;
-            await queue.FetchAttributesAsync(cancellationToken);
-            return queue.ApproximateMessageCount ?? 0;
+            var queueProperties = await queue.GetPropertiesAsync(cancellationToken);
+            return queueProperties == null ||
+                   queueProperties.Value == null
+                ? 0
+                : queueProperties.Value.ApproximateMessagesCount;
         }
     }
 }

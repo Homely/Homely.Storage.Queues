@@ -1,7 +1,9 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
+using Azure;
+using Azure.Storage.Queues.Models;
 using Moq;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -26,7 +28,7 @@ namespace Homely.Storage.Queues.Tests
 
             new object[]
             {
-                new []
+                new object[]
                 {
                     "aaaa",
                     "bbbbb",
@@ -78,22 +80,24 @@ namespace Homely.Storage.Queues.Tests
         public async Task GivenSomeObjectContents_AddMessagesAsync_AddsItToTheQueue<T>(IEnumerable<T> items)
         {
             // Arrange & Act.
-            await Queue.AddMessagesAsync(items, default);
-
-            // Assert.
             foreach (var content in items)
             {
                 var messageContent = Helpers.IsASimpleType(typeof(T))
                     ? content.ToString()
-                    : JsonConvert.SerializeObject(content);
+                    : JsonSerializer.Serialize(content);
 
-                CloudQueue.Verify(x => x.AddMessageAsync(It.Is<CloudQueueMessage>(y => y.AsString == messageContent),
-                                                         null,
-                                                         null,
-                                                         null,
-                                                         null,
-                                                         It.IsAny<CancellationToken>()), Times.Once);
+                QueueClient.Setup(x => x.SendMessageAsync(It.Is<BinaryData>(bd => bd.ToString() == messageContent),
+                                                           null,
+                                                           null,
+                                                           It.IsAny<CancellationToken>()))
+                           .ReturnsAsync(new Mock<Response<SendReceipt>>().Object);
             }
+
+
+            await Queue.AddMessagesAsync(items, default);
+
+            // Assert.
+            QueueClient.VerifyAll();
         }
     }
 }
