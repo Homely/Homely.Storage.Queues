@@ -2,6 +2,7 @@ using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
 using System.Text.Json;
 
 namespace Homely.Storage.Queues.Tests
@@ -30,7 +31,7 @@ namespace Homely.Storage.Queues.Tests
 
             return QueuesModelFactory.QueueMessage(id,
                                                    popReceipt,
-                                                   messageText,
+                                                   Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(messageText)),
                                                    0);
         }
     }

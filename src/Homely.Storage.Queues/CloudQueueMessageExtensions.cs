@@ -13,7 +13,7 @@ namespace Homely.Storage.Queues
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var model = JsonConvert.DeserializeObject<T>(message.Body.ToString());
+            var model = JsonConvert.DeserializeObject<T>(message.Body.AsString());
             return message.ToMessage(model);
         }
 
@@ -29,10 +29,7 @@ namespace Homely.Storage.Queues
                 throw new ArgumentNullException(nameof(model));
             }
 
-            return new Message<T>(model, 
-                                  message.MessageId,
-                                  message.PopReceipt, 
-                                  message.DequeueCount);
+            return new AzureMessage<T>(model, message);
         }
     }
 }
