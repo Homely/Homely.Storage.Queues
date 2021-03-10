@@ -2,6 +2,7 @@ using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +90,7 @@ namespace Homely.Storage.Queues
             }
             else // It's a complex type, so serialize this as Json.
             {
-                await queue.SendMessageAsync(BinaryData.FromObjectAsJson(item),
+                await queue.SendMessageAsync(JsonConvert.SerializeObject(item),
                                              visibilityTimeout,
                                              timeToLive,
                                              cancellationToken);

@@ -1,4 +1,5 @@
 using Azure.Storage.Queues.Models;
+using Newtonsoft.Json;
 using System;
 
 namespace Homely.Storage.Queues
@@ -12,7 +13,7 @@ namespace Homely.Storage.Queues
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var model = message.Body.ToObjectFromJson<T>();
+            var model = JsonConvert.DeserializeObject<T>(message.Body.ToString());
             return message.ToMessage(model);
         }
 
