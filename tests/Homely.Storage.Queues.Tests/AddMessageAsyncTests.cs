@@ -1,7 +1,6 @@
 using Azure;
 using Azure.Storage.Queues.Models;
 using Moq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -65,7 +64,7 @@ namespace Homely.Storage.Queues.Tests
             else
             {
                 var messageContent = JsonSerializer.Serialize(content);
-                QueueClient.Setup(x => x.SendMessageAsync(It.Is<BinaryData>(bd => bd.ToString() == messageContent),
+                QueueClient.Setup(x => x.SendMessageAsync(It.Is<string>(str => str == messageContent),
                                                           null,
                                                           null,
                                                           It.IsAny<CancellationToken>()))
