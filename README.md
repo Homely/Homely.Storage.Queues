@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/Homely/Homely.Storage.Queues/branch/master/graph/badge.svg?token=jalOqmprkb)](https://codecov.io/gh/Homely/Homely.Storage.Queues)
 
 This library contains some helpers when working with Queue Storage.  
-A common pattern when working with queues is to serialize/deserialize complex objects to be stored in a queue message. This library helps simplify this process - both ways. The content of the queue needs to be a string, so any value is converted either into a string representation (when a 'simple' type) -or- a string-JSON representation (when a 'complex' type).
+A common pattern when working with queues is to serialize/deserialize complex objects to be stored in a queue message. This library helps simplify this process - both ways. The content of the queue needs to be a base-64 encoded string, so any value is converted either into a string representation (when a 'simple' type) -or- a string-JSON representation (when a 'complex' type).
 
 ### What's a Simple / Complex Type?
 - Simple: a [.NET Primitive](https://docs.microsoft.com/en-us/dotnet/api/system.type.isprimitive?view=netframework-4.7.2#remarks) or `string` or `decimal`

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace Homely.Storage.Queues
 {
@@ -14,5 +15,22 @@ namespace Homely.Storage.Queues
         public static bool IsASimpleType(this Type type) => type.IsPrimitive ||
                                                             type == typeof(string) ||
                                                             type == typeof(decimal);
+
+        /// <summary>
+        /// Returns a string representation of the BinaryData, decoding as base-64.
+        /// </summary>
+        /// <param name="binaryData">The data to decode</param>
+        /// <returns>Decoded string</returns>
+        /// <remarks>This method assumes messages are base-64 encoded.</remarks>
+        public static string AsString(this BinaryData binaryData)
+        {
+            if (binaryData is null)
+            {
+                throw new ArgumentNullException(nameof(binaryData));
+            }
+
+            var utf8Body = binaryData.ToString();
+            return Encoding.UTF8.GetString(Convert.FromBase64String(utf8Body));
+        }
     }
 }
