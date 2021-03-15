@@ -13,7 +13,7 @@ namespace Homely.Storage.Queues
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var model = JsonConvert.DeserializeObject<T>(message.Body.AsString());
+            var model = JsonConvert.DeserializeObject<T>(message.Body.ToString());
             return message.ToMessage(model);
         }
 

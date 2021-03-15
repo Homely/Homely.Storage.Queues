@@ -31,7 +31,7 @@ namespace Homely.Storage.Queues.Tests
 
             return QueuesModelFactory.QueueMessage(id,
                                                    popReceipt,
-                                                   Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(messageText)),
+                                                   BinaryData.FromString(messageText),
                                                    0);
         }
     }
