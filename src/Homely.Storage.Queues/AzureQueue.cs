@@ -54,7 +54,10 @@ namespace Homely.Storage.Queues
 
         private async Task<QueueClient> CreateCloudQueue()
         {
-            var queue = new QueueClient(_connectionString, Name);
+            var queue = new QueueClient(_connectionString, Name, new QueueClientOptions()
+            {
+                MessageEncoding = QueueMessageEncoding.Base64
+            });
             var createIfNotExistsResponse = await queue.CreateIfNotExistsAsync();
             if (createIfNotExistsResponse != null)
             {
