@@ -166,6 +166,11 @@ namespace Homely.Storage.Queues
         {
             var message = await ReceiveMessageAsync(visibilityTimeout, cancellationToken);
 
+            if (message == null)
+            {
+                return null;
+            }
+
             if (Helpers.IsASimpleType(typeof(T)))
             {
                 var value = (T)Convert.ChangeType(message.Body, typeof(T));

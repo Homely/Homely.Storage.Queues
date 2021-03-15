@@ -8,7 +8,7 @@ namespace Homely.Storage.Queues
     /// <remarks>The <code>Model</code> is a specific type, provided.</remarks>
     public class AzureMessage : Message
     {
-        public AzureMessage(QueueMessage message) : base(message.Body.AsString(),
+        public AzureMessage(QueueMessage message) : base(message.Body.ToString(),
                                                          message.MessageId,
                                                          message.PopReceipt,
                                                          message.DequeueCount)
